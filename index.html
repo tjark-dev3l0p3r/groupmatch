@@ -117,12 +117,22 @@ header p{color:var(--mu);font-size:.9rem;line-height:1.6}
 .par-odd{background:#1a0a2a;color:#c084fc;border:1px solid #4a1a6a}
 .par-even{background:#0a1a2a;color:#60a5fa;border:1px solid #1a3a5a}
 
+/* SHARE BANNER */
+.share-banner{background:#0d1520;border:1px solid #1e3a5f;border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.share-info{flex:1;min-width:180px}
+.share-title{font-weight:700;font-size:.9rem;color:#60a5fa;margin-bottom:4px}
+.share-text{font-size:.78rem;color:var(--mu);line-height:1.5}
+.btn-share{background:linear-gradient(135deg,#1d4ed8,#7c3aed);color:#fff;padding:10px 20px;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.88rem;white-space:nowrap;transition:opacity .18s}
+.btn-share:hover{opacity:.85}
+.share-copied{display:none;color:#4ade80;font-size:.78rem;margin-top:4px;font-weight:600}
+
 /* MOBILE */
 @media(max-width:600px){
   .form-row{flex-direction:column}
   .pcard{min-width:140px;max-width:none;flex:1 1 calc(50% - 6px)}
   .btn-row{flex-direction:column}
   header h1{font-size:1.6rem}
+  .share-banner{flex-direction:column;text-align:center}
 }
 </style>
 </head>
@@ -135,6 +145,16 @@ header p{color:var(--mu);font-size:.9rem;line-height:1.6}
   <p>Numerologie · Chinesischer Tierkreis · Kompatibilität<br>
   <span style="font-size:.8rem">💚💚 Perfekt = gleiches Dreieck + gleiche LP-Parität &nbsp;·&nbsp; 🔴 Clash = Gegensatz-Zeichen</span></p>
 </header>
+
+<!-- SHARE BANNER -->
+<div class="share-banner">
+  <div class="share-info">
+    <div class="share-title">🔗 Gruppe teilen — so funktioniert's</div>
+    <div class="share-text">Jeder trägt sich ein → Klick auf <b>„Link teilen"</b> → Link per WhatsApp/Telegram an die Gruppe → Alle anderen öffnen den Link und sehen alle Einträge. So kann sich jeder von seinem Gerät eintragen!</div>
+    <div class="share-copied" id="share-copied">✓ Link kopiert! Jetzt in der Gruppe teilen.</div>
+  </div>
+  <button class="btn-share" onclick="copyShareLink()">🔗 Link teilen</button>
+</div>
 
 <!-- ADD PERSON -->
 <div class="sec">
@@ -401,17 +421,19 @@ function addPerson(){
   people.push({id:Date.now(),name,gender,dy,mo,yr,lp,zodiac,element,zIdx,trine,par:lpParity(lp)});
   document.getElementById('i-name').value='';
   document.getElementById('i-birth').value='';
+  saveToURL();
   render();
 }
 
 function removePerson(id){
   people=people.filter(p=>p.id!==id);
+  saveToURL();
   render();
 }
 
 function clearAll(){
   if(!people.length)return;
-  if(confirm('Alle Personen löschen?')){people=[];render();}
+  if(confirm('Alle Personen löschen?')){people=[];saveToURL();render();}
 }
 
 function loadDemo(){
@@ -432,6 +454,7 @@ function loadDemo(){
     const trine=getTrine(zodiac);
     people.push({id:Date.now()+Math.random(),name:d.name,gender:d.gender,dy:d.dy,mo:d.mo,yr:d.yr,lp,zodiac,element,zIdx,trine,par:lpParity(lp)});
   });
+  saveToURL();
   render();
 }
 
@@ -713,6 +736,71 @@ function buildDescriptions(){
 }
 
 // ╔══════════════════════════════════════════════════════╗
+// ║  URL PERSISTENCE                                     ║
+// ║  Alle Einträge leben in der URL → teilen = sync     ║
+// ╚══════════════════════════════════════════════════════╝
+
+/** UTF-8-sicheres Base64 encoding */
+function toB64(str){ return btoa(unescape(encodeURIComponent(str))); }
+function fromB64(b64){ return decodeURIComponent(escape(atob(b64))); }
+
+/** Speichert aktuelle Gruppe kompakt in der URL */
+function saveToURL(){
+  if(!people.length){
+    history.replaceState(null,'',window.location.pathname);
+    return;
+  }
+  // Kompaktformat: [name, gender, yr, mo, dy] pro Person
+  const compact = people.map(p=>[p.name, p.gender, p.yr, p.mo, p.dy]);
+  try{
+    const encoded = toB64(JSON.stringify(compact));
+    history.replaceState(null,'', window.location.pathname + '?d=' + encoded);
+  }catch(e){ console.error('saveToURL:',e); }
+}
+
+/** Lädt Gruppe aus URL-Parameter ?d= */
+function loadFromURL(){
+  const params = new URLSearchParams(window.location.search);
+  const d = params.get('d');
+  if(!d) return;
+  try{
+    const compact = JSON.parse(fromB64(d));
+    people = [];
+    compact.forEach(([name,gender,yr,mo,dy])=>{
+      if(!name||!yr||!mo||!dy) return;
+      const lp = calcLP(dy,mo,yr);
+      const zodiac = getAnimal(yr);
+      const element = getElement(yr);
+      const zIdx = ANIMALS.indexOf(zodiac);
+      const trine = getTrine(zodiac);
+      people.push({id:Date.now()+Math.random(), name, gender, dy, mo, yr, lp, zodiac, element, zIdx, trine, par:lpParity(lp)});
+    });
+  }catch(e){ console.error('loadFromURL:',e); }
+}
+
+/** Kopiert den aktuellen Share-Link in die Zwischenablage */
+function copyShareLink(){
+  const url = window.location.href;
+  const copied = document.getElementById('share-copied');
+
+  if(navigator.share && /Mobi/.test(navigator.userAgent)){
+    // Mobil: native Share-Sheet
+    navigator.share({title:'🔮 Gruppen-Match', text:'Trag dich in unsere Gruppe ein!', url})
+      .then(()=>{ copied.style.display='block'; setTimeout(()=>copied.style.display='none', 4000); })
+      .catch(()=>{});
+  } else {
+    // Desktop: in Zwischenablage kopieren
+    navigator.clipboard.writeText(url).then(()=>{
+      copied.style.display='block';
+      setTimeout(()=>copied.style.display='none', 4000);
+    }).catch(()=>{
+      // Fallback: prompt
+      prompt('Diesen Link kopieren und teilen:', url);
+    });
+  }
+}
+
+// ╔══════════════════════════════════════════════════════╗
 // ║  ACCORDION                                           ║
 // ╚══════════════════════════════════════════════════════╝
 function tog(head){
@@ -726,6 +814,7 @@ function tog(head){
 // ║  INIT                                                ║
 // ╚══════════════════════════════════════════════════════╝
 buildDescriptions();
+loadFromURL();  // Gruppe aus URL laden (falls ?d= vorhanden)
 render();
 </script>
 </body>
