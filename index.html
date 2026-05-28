@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔮 Gruppen-Match · Numerologie & Tierkreis</title>
+<style>
+:root{
+  --bg:#08080e;--card:#101018;--card2:#17172200;--b:#252535;
+  --tx:#eeeef5;--mu:#77778a;
+  --male:#4a8fd9;--female:#d94a8c;
+  --t1:#22c55e;--t2:#f59e0b;--t3:#ef4444;--t4:#a855f7;
+  --gold:#f59e0b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:20px 14px 80px}
+
+/* HEADER */
+header{text-align:center;padding:36px 0 28px}
+header h1{font-size:2.1rem;font-weight:900;background:linear-gradient(135deg,#f59e0b,#ef4444,#a855f7,#22c55e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+header p{color:var(--mu);font-size:.9rem;line-height:1.6}
+
+/* SECTION */
+.sec{background:#101018;border:1px solid var(--b);border-radius:16px;padding:22px;margin-bottom:18px}
+.sec-title{font-size:1rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+/* FORM */
+.form-row{display:flex;gap:10px;flex-wrap:wrap}
+.fg{display:flex;flex-direction:column;gap:5px;flex:1;min-width:130px}
+.fg label{font-size:.72rem;color:var(--mu);text-transform:uppercase;letter-spacing:.06em}
+.fg input,.fg select{background:#0d0d18;border:1px solid var(--b);border-radius:8px;padding:10px 12px;color:var(--tx);font-size:.9rem;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.fg input:focus,.fg select:focus{border-color:var(--gold)}
+.fg select option{background:#0d0d18}
+.btn-row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{padding:10px 22px;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.88rem;transition:opacity .18s}
+.btn:hover{opacity:.82}
+.btn-add{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff}
+.btn-demo{background:#1e1e2e;color:var(--mu);border:1px solid var(--b)}
+.btn-clear{background:#1a0a0a;color:#f87171;border:1px solid #4a1a1a}
+
+/* PEOPLE GRID */
+.pgrid{display:flex;flex-wrap:wrap;gap:12px}
+.pcard{background:#0d0d18;border:1px solid var(--b);border-radius:12px;padding:14px 16px;min-width:155px;flex:1;max-width:210px;position:relative;transition:transform .15s}
+.pcard:hover{transform:translateY(-2px)}
+.pcard.m{border-top:3px solid var(--male)}
+.pcard.f{border-top:3px solid var(--female)}
+.pname{font-weight:700;font-size:.95rem;margin-bottom:10px;display:flex;align-items:center;gap:6px;padding-right:22px}
+.gdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.gdot.m{background:var(--male)}
+.gdot.f{background:var(--female)}
+.pstats{font-size:.78rem;line-height:2}
+.srow{display:flex;justify-content:space-between;gap:8px}
+.sl{color:var(--mu)}
+.sv{font-weight:600}
+.lp-num{font-size:1.1rem;font-weight:900}
+.parity-tag{font-size:.65rem;padding:1px 6px;border-radius:99px;margin-left:4px;font-weight:700}
+.btn-rm{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--mu);cursor:pointer;font-size:.9rem;padding:3px;line-height:1}
+.btn-rm:hover{color:#ef4444}
+.empty{text-align:center;padding:36px;color:var(--mu);width:100%}
+.empty-ico{font-size:2.8rem;margin-bottom:10px}
+
+/* WHEEL */
+.wheel-wrap{display:flex;justify-content:center;padding:10px 0}
+#zodiac-svg{max-width:100%;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
+.li{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--mu)}
+.ld{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+
+/* MATRIX */
+.mx-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.mx{border-collapse:collapse;min-width:320px;width:100%}
+.mx th,.mx td{padding:8px 10px;text-align:center;border:1px solid var(--b);font-size:.78rem;white-space:nowrap}
+.mx th{background:#0d0d18;font-weight:700}
+.mx .self{background:#0d0d18;color:var(--mu)}
+.mx .best{background:#0d1f12;color:#4ade80}
+.mx .good{background:#1a1a0a;color:#fbbf24}
+.mx .neutral{background:#131320;color:#818cf8}
+.mx .clash{background:#1f0a0a;color:#f87171}
+.mx .header-m{color:var(--male)}
+.mx .header-f{color:var(--female)}
+
+/* MATCHES LIST */
+.match-item{background:#0d0d18;border:1px solid var(--b);border-radius:10px;padding:13px 15px;margin-bottom:9px;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.match-grade{font-size:1.6rem;flex-shrink:0}
+.match-info{flex:1;min-width:180px}
+.match-names{font-weight:700;font-size:.92rem;margin-bottom:5px}
+.match-detail{font-size:.75rem;color:var(--mu);line-height:1.8}
+.match-animals{font-size:.78rem;color:var(--mu);text-align:right;flex-shrink:0}
+.match-section-head{font-size:.8rem;font-weight:700;color:var(--mu);margin:16px 0 8px;text-transform:uppercase;letter-spacing:.06em}
+
+/* ACCORDION */
+.acc{margin-bottom:8px}
+.acc-head{background:#0d0d18;border:1px solid var(--b);border-radius:10px;padding:13px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:.9rem;transition:background .18s;user-select:none}
+.acc-head:hover{background:#141422}
+.acc-body{display:none;padding:16px;border:1px solid var(--b);border-top:none;border-radius:0 0 10px 10px;background:#101018}
+.acc-body.open{display:block}
+.acc-arrow{transition:transform .2s}
+.acc-head.open-h .acc-arrow{transform:rotate(180deg)}
+
+/* DESC CARDS */
+.dg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:9px;margin-top:12px}
+.dc{background:#0d0d18;border:1px solid var(--b);border-radius:9px;padding:12px 13px}
+.dc-title{font-weight:700;font-size:.85rem;margin-bottom:5px}
+.dc-text{font-size:.76rem;color:var(--mu);line-height:1.55}
+.dc-tags{margin-top:7px;display:flex;gap:4px;flex-wrap:wrap}
+.tag{font-size:.68rem;padding:2px 7px;border-radius:99px;font-weight:600}
+
+/* TRINE + CLASH BOX */
+.trine-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:9px;margin-bottom:18px}
+.tbox{border-radius:9px;padding:12px 13px}
+.clash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-bottom:18px}
+.cbox{background:#1a0808;border:1px solid #4a1a1a;border-radius:9px;padding:10px 13px;font-size:.82rem}
+
+/* LP parity tags */
+.par-odd{background:#1a0a2a;color:#c084fc;border:1px solid #4a1a6a}
+.par-even{background:#0a1a2a;color:#60a5fa;border:1px solid #1a3a5a}
+
+/* MOBILE */
+@media(max-width:600px){
+  .form-row{flex-direction:column}
+  .pcard{min-width:140px;max-width:none;flex:1 1 calc(50% - 6px)}
+  .btn-row{flex-direction:column}
+  header h1{font-size:1.6rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<header>
+  <h1>🔮 Gruppen-Match</h1>
+  <p>Numerologie · Chinesischer Tierkreis · Kompatibilität<br>
+  <span style="font-size:.8rem">💚💚 Perfekt = gleiches Dreieck + gleiche LP-Parität &nbsp;·&nbsp; 🔴 Clash = Gegensatz-Zeichen</span></p>
+</header>
+
+<!-- ADD PERSON -->
+<div class="sec">
+  <div class="sec-title">👤 Person hinzufügen</div>
+  <div class="form-row">
+    <div class="fg" style="flex:2;min-width:160px">
+      <label>Name</label>
+      <input id="i-name" type="text" placeholder="Vorname Nachname" maxlength="30">
+    </div>
+    <div class="fg">
+      <label>Geschlecht</label>
+      <select id="i-gender">
+        <option value="m">♂ Männlich</option>
+        <option value="f">♀ Weiblich</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Geburtsdatum</label>
+      <input id="i-birth" type="date">
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-add" onclick="addPerson()">+ Hinzufügen</button>
+    <button class="btn btn-demo" onclick="loadDemo()">🎲 Demo laden</button>
+    <button class="btn btn-clear" onclick="clearAll()">✕ Alle löschen</button>
+  </div>
+</div>
+
+<!-- PEOPLE GRID -->
+<div class="sec">
+  <div class="sec-title">👥 Gruppe</div>
+  <div id="pgrid" class="pgrid">
+    <div class="empty"><div class="empty-ico">👥</div><p>Trag deine Gruppe oben ein!</p></div>
+  </div>
+</div>
+
+<!-- ZODIAC WHEEL (always visible) -->
+<div class="sec">
+  <div class="sec-title">🐉 Chinesischer Tierkreis · Kompatibilitätsrad</div>
+  <div style="font-size:.78rem;color:var(--mu);margin-bottom:12px">Farbige Dreiecke = harmonische Triaden (三合) · Rote Linien = Gegensatz-Clash (六冲) · Initialen = Mitglieder</div>
+  <div class="wheel-wrap">
+    <svg id="zodiac-svg" viewBox="-5 -5 450 450" width="440" height="440"></svg>
+  </div>
+  <div class="legend">
+    <div class="li"><div class="ld" style="background:var(--t1)"></div>🐭🐲🐵 Pionier-Dreieck</div>
+    <div class="li"><div class="ld" style="background:var(--t2)"></div>🐮🐍🐓 Weisheits-Dreieck</div>
+    <div class="li"><div class="ld" style="background:var(--t3)"></div>🐯🐎🐕 Helden-Dreieck</div>
+    <div class="li"><div class="ld" style="background:var(--t4)"></div>🐰🐑🐷 Kunst-Dreieck</div>
+    <div class="li"><div class="ld" style="background:#ff4444;opacity:.7"></div>Gegensatz/Clash</div>
+    <div class="li"><div class="ld" style="background:var(--male)"></div>♂ Männlich</div>
+    <div class="li"><div class="ld" style="background:var(--female)"></div>♀ Weiblich</div>
+  </div>
+</div>
+
+<!-- MATCH MATRIX -->
+<div class="sec" id="sec-matrix" style="display:none">
+  <div class="sec-title">📊 Match-Matrix</div>
+  <div class="mx-scroll"><table class="mx" id="matrix"></table></div>
+  <div class="legend" style="margin-top:14px">
+    <div class="li"><div class="ld" style="background:#0d1f12;border:1px solid #4ade80"></div>💚💚 Perfekt</div>
+    <div class="li"><div class="ld" style="background:#1a1a0a;border:1px solid #fbbf24"></div>💚 Gut</div>
+    <div class="li"><div class="ld" style="background:#131320;border:1px solid #818cf8"></div>💛 Neutral</div>
+    <div class="li"><div class="ld" style="background:#1f0a0a;border:1px solid #f87171"></div>🔴 Clash</div>
+  </div>
+</div>
+
+<!-- MATCH LIST -->
+<div class="sec" id="sec-matches" style="display:none">
+  <div class="sec-title">💫 Beste Matches & Clashes</div>
+  <div id="match-list"></div>
+</div>
+
+<!-- DESCRIPTIONS -->
+<div class="sec">
+  <div class="sec-title">📚 Beschreibungen & Referenz</div>
+
+  <div class="acc">
+    <div class="acc-head" onclick="tog(this)">
+      🔢 Lebenszahlen 1–33 (mit Parität) <span class="acc-arrow">▼</span>
+    </div>
+    <div class="acc-body" id="acc-lp"></div>
+  </div>
+
+  <div class="acc">
+    <div class="acc-head" onclick="tog(this)">
+      📅 Tag-des-Geburtsnummern 1–31 <span class="acc-arrow">▼</span>
+    </div>
+    <div class="acc-body" id="acc-day"></div>
+  </div>
+
+  <div class="acc">
+    <div class="acc-head" onclick="tog(this)">
+      🐉 Chinesische Tierkreiszeichen, Dreiecke & Elemente <span class="acc-arrow">▼</span>
+    </div>
+    <div class="acc-body" id="acc-zodiac"></div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+<script>
+// ╔══════════════════════════════════════════════════════╗
+// ║  DATA                                                ║
+// ╚══════════════════════════════════════════════════════╝
+
+const ANIMALS = ['Ratte','Büffel','Tiger','Hase','Drache','Schlange','Pferd','Ziege','Affe','Hahn','Hund','Schwein'];
+const ANI_EMO  = ['🐭','🐮','🐯','🐰','🐲','🐍','🐎','🐑','🐵','🐓','🐕','🐷'];
+const ELEM_ARR = ['Metall','Metall','Wasser','Wasser','Holz','Holz','Feuer','Feuer','Erde','Erde'];
+const ELEM_CLR = {Metall:'#c0c0c0',Wasser:'#60a5fa',Holz:'#86efac',Feuer:'#f87171',Erde:'#d97706'};
+const ELEM_EMO = {Metall:'⚙️',Wasser:'💧',Holz:'🌳',Feuer:'🔥',Erde:'🌍'};
+
+const TRINES = [
+  {animals:['Ratte','Drache','Affe'],  color:'#22c55e', name:'Pionier-Dreieck'},
+  {animals:['Büffel','Schlange','Hahn'],color:'#f59e0b',name:'Weisheits-Dreieck'},
+  {animals:['Tiger','Pferd','Hund'],   color:'#ef4444', name:'Helden-Dreieck'},
+  {animals:['Hase','Ziege','Schwein'], color:'#a855f7', name:'Kunst-Dreieck'}
+];
+
+const CLASHES = {
+  Ratte:'Pferd',Pferd:'Ratte',Büffel:'Ziege',Ziege:'Büffel',
+  Tiger:'Affe',Affe:'Tiger',Hase:'Hahn',Hahn:'Hase',
+  Drache:'Hund',Hund:'Drache',Schlange:'Schwein',Schwein:'Schlange'
+};
+
+const LP_DATA = {
+  1:{name:'Pionier',   emo:'🦅',clr:'#ef4444',
+     desc:'Unabhängig, zielstrebig, selbstbestimmt. Geborener Anführer — geht eigene Wege und bricht Regeln wenn nötig.'},
+  2:{name:'Diplomat',  emo:'🕊️',clr:'#60a5fa',
+     desc:'Einfühlsam, kooperativ, harmonisch. Natürlicher Friedensstifter und Teamplayer, der intuitiv auf andere eingeht.'},
+  3:{name:'Kreativer', emo:'🎨',clr:'#f59e0b',
+     desc:'Ausdrucksstark, kommunikativ, optimistisch. Liebt Kunst und Sprache — bringt Freude und Kreativität in jede Runde.'},
+  4:{name:'Aufbauer',  emo:'🏗️',clr:'#84cc16',
+     desc:'Strukturiert, zuverlässig, fleißig. Erschafft solide Grundlagen und ist der verlässlichste Mensch im Raum.'},
+  5:{name:'Freigeist', emo:'🌊',clr:'#22d3ee',
+     desc:'Abenteuerlustig, vielseitig, wandelbar. Liebt Freiheit und neue Erfahrungen — steht niemals still.'},
+  6:{name:'Fürsorger', emo:'❤️',clr:'#f472b6',
+     desc:'Liebevoll, verantwortungsbewusst, harmonisch. Kümmert sich um alle und schafft ein sicheres Zuhause.'},
+  7:{name:'Weiser',    emo:'🔭',clr:'#818cf8',
+     desc:'Analytisch, spirituell, tiefgründig. Hinterfragt alles und findet Wahrheit dort, wo andere nicht hinschauen.'},
+  8:{name:'Macher',    emo:'💎',clr:'#fbbf24',
+     desc:'Ehrgeizig, kraftvoll, erfolgsorientiert. Naturgegebene Autorität und unfehlbarer Geschäftssinn.'},
+  9:{name:'Humanist',  emo:'🌍',clr:'#34d399',
+     desc:'Großherzig, altruistisch, universal. Trägt Mitgefühl für alle Menschen und will die Welt besser machen.'},
+  11:{name:'Erleuchtung',emo:'✨',clr:'#c4b5fd',
+     desc:'✦ MEISTERZAHL ✦  Hochintuitiv, inspiriert, sensitiv. Trägt spirituelles Licht und inspiriert Menschen durch Visionen.'},
+  22:{name:'Meisterbauer',emo:'🏛️',clr:'#fde68a',
+     desc:'✦ MEISTERZAHL ✦  Visionär + pragmatisch. Erschafft Bleibendes für die Welt — kombiniert großen Traum mit konkreter Tat.'},
+  33:{name:'Meisterlehrer',emo:'🌟',clr:'#fbcfe8',
+     desc:'✦ MEISTERZAHL ✦  Universal liebend, aufopfernd, heilend. Höchste spirituelle Schwingung — unterrichtet durch bedingungslose Liebe.'}
+};
+
+const DAY_DATA = {
+  1:'Führung & Initiative — Du gehst voran, zeigst den Weg.',
+  2:'Sensibilität & Kooperation — Du bist geborener Vermittler.',
+  3:'Kreativität & Ausdruck — Du bringst Freude und Leichtigkeit.',
+  4:'Struktur & Zuverlässigkeit — Du bist der Fels in der Brandung.',
+  5:'Abenteuer & Freiheit — Du liebst das Unbekannte.',
+  6:'Liebe & Harmonie — Du schaffst Geborgenheit für alle.',
+  7:'Tiefe & Spiritualität — Du suchst das Verborgene.',
+  8:'Ehrgeiz & Kraft — Du strebst nach Erfolg und Anerkennung.',
+  9:'Idealismus & Mitgefühl — Du willst die Welt besser machen.',
+  10:'Unabhängige Kreativität — Führungsstärke mit Originalität.',
+  11:'Visionen & Inspiration — Meisterzahl-Energie im Geburtstag.',
+  12:'Geselligkeit & Charme — Du begeisterst jede Runde.',
+  13:'Transformation & Ausdauer — Du wandelst Hindernisse in Kraft.',
+  14:'Vielseitigkeit & Wandel — Du bist niemals langweilig.',
+  15:'Charme & Kreativität — Magnetisch, warmherzig, anziehend.',
+  16:'Introspektive & Suche — Du findest Wahrheit jenseits des Offensichtlichen.',
+  17:'Ehrgeiz & spirituelle Tiefe — Du willst tief UND hoch.',
+  18:'Humanismus & Weltgewandtheit — Du denkst groß und handelst weise.',
+  19:'Selbstbestimmung & Kraft — Du erschaffst dein eigenes Leben.',
+  20:'Sensibilität & Dualität — Du spürst beide Seiten jeder Situation.',
+  21:'Lebensfreude & Geselligkeit — Du bist das Licht jeder Party.',
+  22:'Vision + Struktur — Meisterbauer-Energie: erschaffe Großes.',
+  23:'Kommunikation & Abenteuer — Du bist überall zu Hause.',
+  24:'Familie & Harmonie — Du schaffst Wärme und Geborgenheit.',
+  25:'Spiritualität & Analyse — Du verbindest Himmel und Erde.',
+  26:'Diplomatie & Ressourcen — Du bringst Menschen zusammen.',
+  27:'Weisheit & Mitgefühl — Du siehst das große Ganze.',
+  28:'Führung & Teamgeist — Du baust auf andere, ohne sie zu brauchen.',
+  29:'Intuition & spirituelle Ladung — Du spürst, was andere nicht sehen.',
+  30:'Kreativität & Ausdruck — Du erschaffst aus dem Nichts.',
+  31:'Zuverlässige Kreativität — Träumer mit Bodenhaftung.'
+};
+
+const ANI_DATA = {
+  Ratte:   {desc:'Clever, charmant, optimistisch. Einfallsreich und schnell im Denken.',        str:'Intelligenz · Charme · Anpassung',  weak:'Egozentrik · Unruhe'},
+  Büffel:  {desc:'Zuverlässig, entschlossen, geduldig. Stur, aber aufrichtig bis ins Mark.',    str:'Ausdauer · Stärke · Loyalität',    weak:'Sturheit · Konservatismus'},
+  Tiger:   {desc:'Mutig, wettbewerbsstark, unberechenbar. Natürliche Führungspersönlichkeit.', str:'Mut · Charisma · Entschlossenheit', weak:'Impulsivität · Arroganz'},
+  Hase:    {desc:'Friedlich, elegant, taktvoll. Liebt Sicherheit und Harmonie.',               str:'Diplomatie · Kreativität · Güte',   weak:'Passivität · Überempfindlichkeit'},
+  Drache:  {desc:'Selbstbewusst, intelligent, ehrgeizig. Das einzige mythische Tier — außergewöhnlich.',str:'Vitalität · Führung · Weisheit',   weak:'Arroganz · Sturheit'},
+  Schlange:{desc:'Intuitiv, anmutig, verschlossen. Tiefgründig und magnetisch anziehend.',      str:'Intuition · Eleganz · Weisheit',   weak:'Misstrauen · Eifersucht'},
+  Pferd:   {desc:'Energiegeladen, frei, lebhaft. Liebt Freiheit und schnelle Veränderungen.',  str:'Energie · Freiheit · Kommunikation',weak:'Ungeduld · Unbeständigkeit'},
+  Ziege:   {desc:'Kreativ, sensibel, mitfühlend. Liebt Kunst und eine friedliche Umgebung.',   str:'Kreativität · Sanftheit · Mitgefühl',weak:'Passivität · Abhängigkeit'},
+  Affe:    {desc:'Witzig, anpassungsfähig, genial. Klug und einfallsreich — manchmal tricky.', str:'Intelligenz · Witz · Anpassung',    weak:'Launenhaftigkeit · Täuschung'},
+  Hahn:    {desc:'Beobachtend, fleißig, mutig. Liebt es, im Mittelpunkt zu stehen.',           str:'Ehrlichkeit · Mut · Genauigkeit',  weak:'Selbstgefälligkeit · Überkritisch'},
+  Hund:    {desc:'Loyal, ehrlich, zuverlässig. Der treueste Freund, den man haben kann.',      str:'Loyalität · Ehrlichkeit · Fürsorge',weak:'Ängstlichkeit · Zynismus'},
+  Schwein: {desc:'Gutmütig, ehrlich, ausdauernd. Liebt das gute Leben und Harmonie.',          str:'Güte · Großzügigkeit · Ausdauer',  weak:'Naivität · Selbstsucht'}
+};
+
+const ELEM_DATA = {
+  Holz:   {desc:'Kreativität, Wachstum, Expansion, Flexibilität. Frühling und Aufbruch.',     years:'Geburtsjahrende 4 oder 5'},
+  Feuer:  {desc:'Leidenschaft, Dynamismus, Optimismus, Energie. Sommer und Fülle.',           years:'Geburtsjahrende 6 oder 7'},
+  Erde:   {desc:'Stabilität, Balance, Zuverlässigkeit, Bodenständigkeit. Mitte aller Elemente.',years:'Geburtsjahrende 8 oder 9'},
+  Metall: {desc:'Stärke, Entschlossenheit, Ehrgeiz, Klarheit. Herbst und Ernte.',             years:'Geburtsjahrende 0 oder 1'},
+  Wasser: {desc:'Weisheit, Flexibilität, Empathie, Tiefe. Winter und Innenschau.',             years:'Geburtsjahrende 2 oder 3'}
+};
+
+// ╔══════════════════════════════════════════════════════╗
+// ║  STATE                                               ║
+// ╚══════════════════════════════════════════════════════╝
+let people = [];
+
+// ╔══════════════════════════════════════════════════════╗
+// ║  CALCULATIONS                                        ║
+// ╚══════════════════════════════════════════════════════╝
+function reduceLP(n){
+  if(n===11||n===22||n===33)return n;
+  if(n<=9)return n;
+  return reduceLP(n.toString().split('').reduce((a,b)=>a+parseInt(b),0));
+}
+function calcLP(day,month,year){
+  const d=reduceLP(day);
+  const m=reduceLP(month);
+  const y=reduceLP(year.toString().split('').reduce((a,b)=>a+parseInt(b),0));
+  return reduceLP(d+m+y);
+}
+function getAnimal(year){ return ANIMALS[(year-1900+1200)%12]; }
+function getElement(year){ return ELEM_ARR[year%10]; }
+function getTrine(animal){ return TRINES.find(t=>t.animals.includes(animal))||null; }
+function lpParity(lp){ return lp%2===0?'even':'odd'; }
+
+function compatZodiac(a1,a2){
+  if(a1===a2)return 'same';
+  const t1=getTrine(a1),t2=getTrine(a2);
+  if(t1&&t2&&t1.name===t2.name)return 'trine';
+  if(CLASHES[a1]===a2)return 'clash';
+  return 'neutral';
+}
+
+function compatOverall(p1,p2){
+  const zc=compatZodiac(p1.zodiac,p2.zodiac);
+  const samePar=lpParity(p1.lp)===lpParity(p2.lp);
+  const trineOk=(zc==='trine'||zc==='same');
+
+  if(trineOk&&samePar)  return{grade:'best',   emo:'💚💚',short:'💚💚 Perfekt',   cls:'best',   score:4};
+  if(trineOk||samePar)  return{grade:'good',   emo:'💚',  short:'💚 Gut',         cls:'good',   score:2};
+  if(zc==='clash')      return{grade:'clash',  emo:'🔴',  short:'🔴 Clash',       cls:'clash',  score:-2};
+  return                       {grade:'neutral',emo:'💛',  short:'💛 Neutral',     cls:'neutral',score:0};
+}
+
+// ╔══════════════════════════════════════════════════════╗
+// ║  PERSON MANAGEMENT                                   ║
+// ╚══════════════════════════════════════════════════════╝
+function addPerson(){
+  const name=document.getElementById('i-name').value.trim();
+  const gender=document.getElementById('i-gender').value;
+  const birth=document.getElementById('i-birth').value;
+  if(!name||!birth){alert('Bitte Name und Geburtsdatum eingeben.');return;}
+  const[yr,mo,dy]=birth.split('-').map(Number);
+  const lp=calcLP(dy,mo,yr);
+  const zodiac=getAnimal(yr);
+  const element=getElement(yr);
+  const zIdx=ANIMALS.indexOf(zodiac);
+  const trine=getTrine(zodiac);
+  people.push({id:Date.now(),name,gender,dy,mo,yr,lp,zodiac,element,zIdx,trine,par:lpParity(lp)});
+  document.getElementById('i-name').value='';
+  document.getElementById('i-birth').value='';
+  render();
+}
+
+function removePerson(id){
+  people=people.filter(p=>p.id!==id);
+  render();
+}
+
+function clearAll(){
+  if(!people.length)return;
+  if(confirm('Alle Personen löschen?')){people=[];render();}
+}
+
+function loadDemo(){
+  people=[];
+  const demos=[
+    {name:'Laura K.',    gender:'f',dy:14,mo:3,yr:1995},
+    {name:'Jonas M.',    gender:'m',dy:7, mo:11,yr:1992},
+    {name:'Sophie T.',   gender:'f',dy:23,mo:6,yr:1998},
+    {name:'Luca B.',     gender:'m',dy:1, mo:1,yr:1990},
+    {name:'Emma R.',     gender:'f',dy:29,mo:9,yr:1996},
+    {name:'Finn W.',     gender:'m',dy:17,mo:5,yr:1993},
+  ];
+  demos.forEach(d=>{
+    const lp=calcLP(d.dy,d.mo,d.yr);
+    const zodiac=getAnimal(d.yr);
+    const element=getElement(d.yr);
+    const zIdx=ANIMALS.indexOf(zodiac);
+    const trine=getTrine(zodiac);
+    people.push({id:Date.now()+Math.random(),name:d.name,gender:d.gender,dy:d.dy,mo:d.mo,yr:d.yr,lp,zodiac,element,zIdx,trine,par:lpParity(lp)});
+  });
+  render();
+}
+
+// ╔══════════════════════════════════════════════════════╗
+// ║  RENDER                                              ║
+// ╚══════════════════════════════════════════════════════╝
+function render(){
+  renderPeople();
+  renderWheel();
+  const show=people.length>=2;
+  document.getElementById('sec-matrix').style.display=show?'':'none';
+  document.getElementById('sec-matches').style.display=show?'':'none';
+  if(show){renderMatrix();renderMatches();}
+}
+
+function renderPeople(){
+  const el=document.getElementById('pgrid');
+  if(!people.length){
+    el.innerHTML='<div class="empty"><div class="empty-ico">👥</div><p>Noch niemand hinzugefügt.<br>Trag deine Gruppe oben ein!</p></div>';
+    return;
+  }
+  el.innerHTML=people.map(p=>{
+    const ld=LP_DATA[p.lp]||{name:'?',emo:'',clr:'#888'};
+    const tc=p.trine?p.trine.color:'#888';
+    const ec=ELEM_CLR[p.element]||'#888';
+    const gClr=p.gender==='m'?'var(--male)':'var(--female)';
+    const gEmo=p.gender==='m'?'♂':'♀';
+    const parCls=p.par==='odd'?'par-odd':'par-even';
+    const parLabel=p.par==='odd'?'Ungerade':'Gerade';
+    return`<div class="pcard ${p.gender}">
+      <button class="btn-rm" onclick="removePerson(${p.id})" title="Entfernen">✕</button>
+      <div class="pname"><span class="gdot ${p.gender}"></span>${p.name}<span style="color:${gClr};font-size:.78rem;margin-left:2px">${gEmo}</span></div>
+      <div class="pstats">
+        <div class="srow">
+          <span class="sl">LP</span>
+          <span class="sv"><span class="lp-num" style="color:${ld.clr}">${p.lp}</span>${ld.emo}<span class="tag parity-tag ${parCls}">${parLabel}</span></span>
+        </div>
+        <div class="srow"><span class="sl" style="font-size:.7rem;color:${ld.clr}">${ld.name}</span></div>
+        <div class="srow" style="margin-top:4px"><span class="sl">Tag</span><span class="sv">${p.dy}. ${p.mo}. ${p.yr}</span></div>
+        <div class="srow"><span class="sl">Tierkreis</span><span class="sv" style="color:${tc}">${ANI_EMO[p.zIdx]} ${p.zodiac}</span></div>
+        <div class="srow"><span class="sl">Element</span><span class="sv" style="color:${ec}">${ELEM_EMO[p.element]} ${p.element}</span></div>
+        ${p.trine?`<div class="srow"><span class="sl" style="font-size:.7rem;color:${tc}">${p.trine.name}</span></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderWheel(){
+  const svg=document.getElementById('zodiac-svg');
+  const cx=220,cy=220,R=155,LR=192;
+  let h='';
+
+  // Background circles
+  h+=`<circle cx="${cx}" cy="${cy}" r="208" fill="#0d0d1a" stroke="#2a2a40" stroke-width="1"/>`;
+  h+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#1e1e30" stroke-width="1" stroke-dasharray="3 3"/>`;
+  h+=`<circle cx="${cx}" cy="${cy}" r="68" fill="#08080e" stroke="#1e1e30" stroke-width="1"/>`;
+  // Center text
+  h+=`<text x="${cx}" y="${cy-10}" text-anchor="middle" fill="#f59e0b" font-size="13" font-weight="800">三合</text>`;
+  h+=`<text x="${cx}" y="${cy+12}" text-anchor="middle" fill="#55556a" font-size="10">Dreiecke</text>`;
+
+  // Pre-compute positions
+  const pos=ANIMALS.map((_,i)=>{
+    const a=(i*30-90)*Math.PI/180;
+    return{x:cx+R*Math.cos(a),y:cy+R*Math.sin(a),a};
+  });
+
+  // Draw trine triangles (filled)
+  TRINES.forEach(t=>{
+    const pts=t.animals.map(a=>pos[ANIMALS.indexOf(a)]);
+    h+=`<polygon points="${pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}" fill="${t.color}18" stroke="${t.color}" stroke-width="1.8" stroke-linejoin="round" opacity=".9"/>`;
+  });
+
+  // Draw clash lines
+  const shownC=new Set();
+  Object.entries(CLASHES).forEach(([a,b])=>{
+    const k=[a,b].sort().join('|');
+    if(shownC.has(k))return;
+    shownC.add(k);
+    const pa=pos[ANIMALS.indexOf(a)],pb=pos[ANIMALS.indexOf(b)];
+    h+=`<line x1="${pa.x.toFixed(1)}" y1="${pa.y.toFixed(1)}" x2="${pb.x.toFixed(1)}" y2="${pb.y.toFixed(1)}" stroke="#ff3333" stroke-width="1.2" stroke-dasharray="5 4" opacity=".55"/>`;
+  });
+
+  // Draw animal nodes + labels
+  ANIMALS.forEach((an,i)=>{
+    const p=pos[i];
+    const trine=getTrine(an);
+    const clr=trine?trine.color:'#666';
+    const lx=cx+(LR)*Math.cos(p.a);
+    const ly=cy+(LR)*Math.sin(p.a);
+
+    // Animal circle
+    h+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="18" fill="${clr}22" stroke="${clr}" stroke-width="1.8"/>`;
+    h+=`<text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="15">${ANI_EMO[i]}</text>`;
+
+    // Label
+    const anchor=Math.abs(lx-cx)<10?'middle':lx>cx?'start':'end';
+    h+=`<text x="${lx.toFixed(1)}" y="${(ly+1).toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle" fill="${clr}" font-size="9.5" font-weight="700">${an}</text>`;
+
+    // People dots
+    const here=people.filter(p2=>p2.zodiac===an);
+    here.forEach((per,pi)=>{
+      const spread=0.28;
+      const da=p.a+(pi-(here.length-1)/2)*spread;
+      const dr=32;
+      const dx=p.x+dr*Math.cos(da);
+      const dy2=p.y+dr*Math.sin(da);
+      const dc=per.gender==='m'?'#4a8fd9':'#d94a8c';
+      const init=per.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+      h+=`<circle cx="${dx.toFixed(1)}" cy="${dy2.toFixed(1)}" r="10" fill="${dc}" stroke="#fff" stroke-width="1.5"/>`;
+      h+=`<text x="${dx.toFixed(1)}" y="${dy2.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="7" font-weight="900">${init}</text>`;
+    });
+  });
+
+  svg.innerHTML=h;
+}
+
+function renderMatrix(){
+  const t=document.getElementById('matrix');
+  if(people.length<2){t.innerHTML='';return;}
+  let h='<thead><tr><th></th>';
+  people.forEach(p=>{
+    const gc=p.gender==='m'?'header-m':'header-f';
+    const sn=p.name.split(' ')[0];
+    h+=`<th class="${gc}">${ANI_EMO[p.zIdx]}<br>${sn}<br><small style="font-weight:400;font-size:.68rem">LP${p.lp}</small></th>`;
+  });
+  h+='</tr></thead><tbody>';
+  people.forEach((p1,i)=>{
+    const gc=p1.gender==='m'?'header-m':'header-f';
+    h+=`<tr><th class="${gc}">${ANI_EMO[p1.zIdx]} ${p1.name.split(' ')[0]}</th>`;
+    people.forEach((p2,j)=>{
+      if(i===j){h+=`<td class="self">—</td>`;return;}
+      const oc=compatOverall(p1,p2);
+      const zc=compatZodiac(p1.zodiac,p2.zodiac);
+      const sp=p1.par===p2.par;
+      const zcLabel=zc==='trine'?'🐉 Dreieck':zc==='clash'?'⚡ Clash':zc==='same'?'🔄 Gleich':'➰ Neutral';
+      const lpLabel=sp?`🔢 LP ${p1.par==='odd'?'ungerade':'gerade'} ✓`:`🔢 LP ${p1.lp}/${p2.lp} ✗`;
+      h+=`<td class="${oc.cls}" title="${oc.short}&#10;${zcLabel}&#10;${lpLabel}">${oc.emo}</td>`;
+    });
+    h+='</tr>';
+  });
+  h+='</tbody>';
+  t.innerHTML=h;
+}
+
+function renderMatches(){
+  const el=document.getElementById('match-list');
+  if(people.length<2){el.innerHTML='';return;}
+  const pairs=[];
+  for(let i=0;i<people.length;i++){
+    for(let j=i+1;j<people.length;j++){
+      const p1=people[i],p2=people[j];
+      const oc=compatOverall(p1,p2);
+      const zc=compatZodiac(p1.zodiac,p2.zodiac);
+      const sp=p1.par===p2.par;
+      pairs.push({p1,p2,oc,zc,sp});
+    }
+  }
+  pairs.sort((a,b)=>b.oc.score-a.oc.score);
+
+  function pairHTML(pair){
+    const{p1,p2,oc,zc,sp}=pair;
+    const gc1=p1.gender==='m'?'var(--male)':'var(--female)';
+    const gc2=p2.gender==='m'?'var(--male)':'var(--female)';
+    const t1=getTrine(p1.zodiac),t2=getTrine(p2.zodiac);
+    const trineLabel=zc==='trine'?`🐉 Gleiches Dreieck — ${t1.name}`:zc==='same'?`🔄 Gleiches Tier`:zc==='clash'?`⚡ Tierkreis-Gegensätze (${p1.zodiac} vs ${p2.zodiac})`:`➰ Tierkreis neutral`;
+    const lpLabel=sp?`🔢 LP beide ${p1.par==='odd'?'ungerade':'gerade'} (${p1.lp} & ${p2.lp}) ✓`:`🔢 LP gemischt (${p1.lp} ${p1.par==='odd'?'ungerade':'gerade'} & ${p2.lp} ${p2.par==='odd'?'ungerade':'gerade'})`;
+    return`<div class="match-item">
+      <div class="match-grade">${oc.emo}</div>
+      <div class="match-info">
+        <div class="match-names"><span style="color:${gc1}">${p1.name}</span><span style="color:var(--mu)"> × </span><span style="color:${gc2}">${p2.name}</span></div>
+        <div class="match-detail">${trineLabel}<br>${lpLabel}</div>
+      </div>
+      <div class="match-animals">
+        ${ANI_EMO[p1.zIdx]} ${p1.zodiac}<br>
+        ${ANI_EMO[p2.zIdx]} ${p2.zodiac}
+      </div>
+    </div>`;
+  }
+
+  const best=pairs.filter(p=>p.oc.grade==='best');
+  const good=pairs.filter(p=>p.oc.grade==='good');
+  const neutral=pairs.filter(p=>p.oc.grade==='neutral');
+  const clashes=pairs.filter(p=>p.oc.grade==='clash');
+
+  let h='';
+  if(best.length){h+=`<div class="match-section-head">💚💚 Perfekte Matches (Dreieck + gleiche Parität)</div>`;best.forEach(p=>{h+=pairHTML(p);});}
+  if(good.length){h+=`<div class="match-section-head">💚 Gute Matches</div>`;good.forEach(p=>{h+=pairHTML(p);});}
+  if(neutral.length){h+=`<div class="match-section-head">💛 Neutrale Paare</div>`;neutral.forEach(p=>{h+=pairHTML(p);});}
+  if(clashes.length){h+=`<div class="match-section-head">🔴 Clash-Paare</div>`;clashes.forEach(p=>{h+=pairHTML(p);});}
+  el.innerHTML=h||'<p style="color:var(--mu);text-align:center;padding:20px">Keine Paare zum Anzeigen.</p>';
+}
+
+// ╔══════════════════════════════════════════════════════╗
+// ║  DESCRIPTIONS                                        ║
+// ╚══════════════════════════════════════════════════════╝
+function buildDescriptions(){
+  // LP Numbers
+  let lpH='<div style="margin-bottom:14px;font-size:.82rem;color:var(--mu)">Parität bestimmt Match-Kompatibilität:<br>Beide <span class="tag par-odd" style="display:inline-block">Ungerade</span> oder beide <span class="tag par-even" style="display:inline-block">Gerade</span> = LP-Kompatibilität ✓</div><div class="dg">';
+  Object.entries(LP_DATA).forEach(([n,d])=>{
+    const par=parseInt(n)%2===0?'even':'odd';
+    const parCls=par==='odd'?'par-odd':'par-even';
+    const parLabel=par==='odd'?'Ungerade':'Gerade';
+    lpH+=`<div class="dc" style="border-left:3px solid ${d.clr}">
+      <div class="dc-title" style="color:${d.clr}">LP ${n} ${d.emo} ${d.name}<span class="tag parity-tag ${parCls}" style="margin-left:6px;font-size:.62rem">${parLabel}</span></div>
+      <div class="dc-text">${d.desc}</div>
+    </div>`;
+  });
+  lpH+='</div>';
+  document.getElementById('acc-lp').innerHTML=lpH;
+
+  // Day numbers
+  let dH='<div class="dg">';
+  Object.entries(DAY_DATA).forEach(([n,d])=>{
+    const[title,...rest]=d.split(' — ');
+    dH+=`<div class="dc"><div class="dc-title">Tag ${n} — <span style="color:var(--gold)">${title}</span></div><div class="dc-text">${rest.join(' — ')}</div></div>`;
+  });
+  dH+='</div>';
+  document.getElementById('acc-day').innerHTML=dH;
+
+  // Chinese zodiac
+  let zH='';
+  // Trines
+  zH+=`<div style="font-weight:700;margin-bottom:10px;font-size:.9rem">🔺 Harmonische Dreiecke (三合 San He)</div>`;
+  zH+=`<div class="trine-grid">`;
+  TRINES.forEach(t=>{
+    zH+=`<div class="tbox" style="background:${t.color}15;border:1px solid ${t.color}50">
+      <div style="color:${t.color};font-weight:700;margin-bottom:7px">${t.name}</div>
+      <div style="font-size:.85rem">${t.animals.map((a,i)=>`${ANI_EMO[ANIMALS.indexOf(a)]} ${a}`).join(' · ')}</div>
+      <div style="font-size:.72rem;color:var(--mu);margin-top:5px">Perfekte Harmonie — erschaffen gemeinsam Großes</div>
+    </div>`;
+  });
+  zH+=`</div>`;
+
+  // Clashes
+  zH+=`<div style="font-weight:700;margin:16px 0 10px;font-size:.9rem">⚡ Gegensatz-Paare (六冲 Liu Chong)</div>`;
+  zH+=`<div class="clash-grid">`;
+  const shown=new Set();
+  Object.entries(CLASHES).forEach(([a,b])=>{
+    const k=[a,b].sort().join('|');
+    if(shown.has(k))return;
+    shown.add(k);
+    const ai=ANIMALS.indexOf(a),bi=ANIMALS.indexOf(b);
+    zH+=`<div class="cbox">${ANI_EMO[ai]} <b>${a}</b> ⚡ <b>${b}</b> ${ANI_EMO[bi]}</div>`;
+  });
+  zH+=`</div>`;
+
+  // Animal details
+  zH+=`<div style="font-weight:700;margin:16px 0 10px;font-size:.9rem">🐾 Tierkreiszeichen im Detail</div>`;
+  zH+=`<div class="dg">`;
+  ANIMALS.forEach((an,i)=>{
+    const d=ANI_DATA[an];
+    const t=getTrine(an);
+    const clr=t?t.color:'#666';
+    zH+=`<div class="dc" style="border-left:3px solid ${clr}">
+      <div class="dc-title">${ANI_EMO[i]} ${an} <span style="font-size:.7rem;color:${clr};font-weight:400">${t?t.name:''}</span></div>
+      <div class="dc-text">${d.desc}</div>
+      <div class="dc-tags">
+        <span class="tag" style="background:${clr}20;color:${clr};border:1px solid ${clr}50;font-size:.68rem">+ ${d.str}</span>
+      </div>
+      <div style="font-size:.7rem;color:#f87171;margin-top:4px">− ${d.weak}</div>
+    </div>`;
+  });
+  zH+=`</div>`;
+
+  // Elements
+  zH+=`<div style="font-weight:700;margin:16px 0 10px;font-size:.9rem">🌿 Die 5 Elemente</div>`;
+  zH+=`<div class="dg">`;
+  Object.entries(ELEM_DATA).forEach(([el,d])=>{
+    const clr=ELEM_CLR[el];
+    zH+=`<div class="dc" style="border-top:3px solid ${clr}">
+      <div class="dc-title">${ELEM_EMO[el]} ${el}</div>
+      <div class="dc-text">${d.desc}</div>
+      <div style="font-size:.7rem;color:#555;margin-top:5px">${d.years}</div>
+    </div>`;
+  });
+  zH+=`</div>`;
+
+  document.getElementById('acc-zodiac').innerHTML=zH;
+}
+
+// ╔══════════════════════════════════════════════════════╗
+// ║  ACCORDION                                           ║
+// ╚══════════════════════════════════════════════════════╝
+function tog(head){
+  const body=head.nextElementSibling;
+  const open=body.classList.contains('open');
+  body.classList.toggle('open',!open);
+  head.classList.toggle('open-h',!open);
+}
+
+// ╔══════════════════════════════════════════════════════╗
+// ║  INIT                                                ║
+// ╚══════════════════════════════════════════════════════╝
+buildDescriptions();
+render();
+</script>
+</body>
+</html>
