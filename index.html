@@ -127,25 +127,6 @@ header p{color:var(--mu);font-size:.88rem;line-height:1.6}
 .clash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-bottom:18px}
 .cbox{background:#1a0808;border:1px solid #4a1a1a;border-radius:9px;padding:10px 13px;font-size:.82rem}
 
-/* SETUP OVERLAY */
-#setup-overlay{position:fixed;inset:0;background:#000000cc;display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
-#setup-box{background:#101018;border:1px solid var(--b);border-radius:20px;padding:32px;max-width:520px;width:100%}
-#setup-box h2{font-size:1.4rem;font-weight:800;margin-bottom:8px;background:linear-gradient(135deg,#f59e0b,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-#setup-box p{color:var(--mu);font-size:.85rem;line-height:1.6;margin-bottom:20px}
-.setup-steps{list-style:none;counter-reset:step;margin-bottom:22px}
-.setup-steps li{counter-increment:step;padding:10px 0 10px 44px;position:relative;font-size:.85rem;border-bottom:1px solid var(--b);color:var(--mu);line-height:1.5}
-.setup-steps li:last-child{border-bottom:none}
-.setup-steps li::before{content:counter(step);position:absolute;left:0;top:8px;width:28px;height:28px;background:#1e1e2e;border:1px solid var(--b);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:var(--gold)}
-.setup-steps a{color:#60a5fa;text-decoration:none;font-weight:600}
-.setup-steps b{color:var(--tx)}
-#setup-paste{width:100%;min-height:100px;background:#0d0d18;border:1px solid var(--b);border-radius:8px;padding:12px;color:var(--tx);font-size:.78rem;font-family:monospace;resize:vertical;outline:none;margin-bottom:12px}
-#setup-paste:focus{border-color:var(--gold)}
-#setup-paste::placeholder{color:#444}
-#setup-err{color:#f87171;font-size:.8rem;margin-bottom:8px;display:none}
-#btn-setup-save{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;padding:12px 28px;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.92rem;width:100%;transition:opacity .18s}
-#btn-setup-save:hover{opacity:.85}
-.setup-skip{text-align:center;margin-top:12px;font-size:.75rem;color:#555}
-.setup-skip a{color:#555;cursor:pointer;text-decoration:underline}
 
 /* MOBILE */
 @media(max-width:600px){
@@ -160,32 +141,6 @@ header p{color:var(--mu);font-size:.88rem;line-height:1.6}
 </head>
 <body>
 
-<!-- SETUP OVERLAY (shown until Firebase is configured) -->
-<div id="setup-overlay" style="display:none">
-  <div id="setup-box">
-    <h2>🔥 Firebase einrichten</h2>
-    <p>Einmalig 2 Minuten Setup — danach funktioniert die Gruppe <b>für alle</b> automatisch, ohne Links-Weiterschicken.</p>
-    <ol class="setup-steps">
-      <li>Öffne <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> (bist du mit Gmail eingeloggt)</li>
-      <li><b>„Projekt erstellen"</b> → Name: <b>groupmatch</b> → Weiter → Weiter → Projekt erstellen</li>
-      <li>Links: <b>Erstellen → Realtime Database</b> → „Datenbank erstellen" → <b>Testmodus</b> → Weiter → Fertig</li>
-      <li>Oben links ⚙️ → <b>Projekteinstellungen</b> → runterscrollen → <b>„Firebase zu Web-App hinzufügen"</b> → Nickname: groupmatch → Registrieren</li>
-      <li>Den <b>firebaseConfig = { ... }</b> Block unten einfügen und auf Speichern klicken</li>
-    </ol>
-    <textarea id="setup-paste" placeholder='const firebaseConfig = {
-  apiKey: "AIza...",
-  authDomain: "...",
-  databaseURL: "https://...-default-rtdb.firebaseio.com",
-  projectId: "...",
-  storageBucket: "...",
-  messagingSenderId: "...",
-  appId: "..."
-};'></textarea>
-    <div id="setup-err">❌ Config nicht erkannt — bitte den kompletten firebaseConfig Block einfügen.</div>
-    <button id="btn-setup-save" onclick="saveSetup()">🚀 Speichern & starten</button>
-    <div class="setup-skip"><a onclick="skipSetup()">Weiter ohne Sync (nur lokal)</a></div>
-  </div>
-</div>
 
 <div class="wrap">
 
@@ -390,50 +345,18 @@ function compatOverall(p1,p2){
 }
 
 // ╔══════════════════════════════════════════════════════════════╗
-// ║  FIREBASE SETUP                                              ║
+// ║  FIREBASE CONFIG (hardcoded)                                 ║
 // ╚══════════════════════════════════════════════════════════════╝
-function getStoredConfig(){
-  try{return JSON.parse(localStorage.getItem('gm_fbconfig')||'null');}catch{return null;}
-}
-
-function saveSetup(){
-  const raw=document.getElementById('setup-paste').value.trim();
-  const err=document.getElementById('setup-err');
-  err.style.display='none';
-  // Extrahiere JSON aus dem firebaseConfig Block
-  let cfg=null;
-  try{
-    // Versuche direkt als JSON
-    if(raw.startsWith('{')){cfg=JSON.parse(raw);}
-    else{
-      // Extrahiere den {...} Teil aus "const firebaseConfig = {...};"
-      const m=raw.match(/\{[\s\S]*\}/);
-      if(m){
-        // Konvertiere JS-Object-Syntax zu JSON (Schlüssel in Anführungszeichen)
-        const jsonStr=m[0]
-          .replace(/\/\/[^\n]*/g,'')                          // Kommentare entfernen
-          .replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g,'$1"$2":')  // Keys quoten
-          .replace(/'/g,'"');                                  // Einfache → doppelte Quotes
-        cfg=JSON.parse(jsonStr);
-      }
-    }
-  }catch(e){cfg=null;}
-  if(!cfg||!cfg.apiKey||!cfg.databaseURL){
-    err.style.display='block';
-    return;
-  }
-  localStorage.setItem('gm_fbconfig',JSON.stringify(cfg));
-  document.getElementById('setup-overlay').style.display='none';
-  initFirebase(cfg);
-}
-
-function skipSetup(){
-  document.getElementById('setup-overlay').style.display='none';
-  localMode=true;
-  setStatus('offline','⚠️ Lokaler Modus — Daten werden nicht geteilt');
-  updateShareUI();
-  render();
-}
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAQY9DW_Ysy5jdrWSCaCTi8k91c68N6jhE",
+  authDomain: "groupmatch-521c0.firebaseapp.com",
+  databaseURL: "https://groupmatch-521c0-default-rtdb.firebaseio.com",
+  projectId: "groupmatch-521c0",
+  storageBucket: "groupmatch-521c0.firebasestorage.app",
+  messagingSenderId: "766509970006",
+  appId: "1:766509970006:web:03c8fa69ef412cc91a01f7",
+  measurementId: "G-LDC0GBWMVB"
+};
 
 function initFirebase(cfg){
   if(!window._fbReady){
@@ -685,15 +608,7 @@ function tog(head){const body=head.nextElementSibling;const open=body.classList.
 // ╚══════════════════════════════════════════════════════════════╝
 buildDescriptions();
 render();
-
-const stored=getStoredConfig();
-if(stored){
-  // Firebase-Config gefunden → sofort starten
-  initFirebase(stored);
-}else{
-  // Erste Nutzung → Setup zeigen
-  document.getElementById('setup-overlay').style.display='flex';
-}
+initFirebase(FIREBASE_CONFIG);
 </script>
 </body>
 </html>
